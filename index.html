@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CNC Feed and Speed Calculator</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 500px; margin: 40px auto; }
+    .input-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 5px; }
+    .slider-container { display: flex; align-items: center; }
+    input[type=range] { flex: 1; }
+    input[type=number] { width: 100px; margin-left: 10px; }
+    .result { margin-top: 20px; font-weight: bold; font-size: 1.2em; }
+    .button-container { text-align: right; margin-top: 10px; }
+    button { padding: 8px 16px; font-size: 1em; }
+  </style>
+</head>
+<body>
+
+  <h2>CNC Feed & Speed Calculator</h2>
+
+  <div class="input-group">
+    <label for="ipm">Feed Rate (IPM)</label>
+    <div class="slider-container">
+      <input type="range" id="ipmSlider" min="1" max="500" value="100">
+      <input type="number" id="ipmInput" min="1" max="500" value="100">
+    </div>
+  </div>
+
+  <div class="input-group">
+    <label for="flutes">Number of Flutes</label>
+    <div class="slider-container">
+      <input type="range" id="flutesSlider" min="1" max="4" value="2">
+      <input type="number" id="flutesInput" min="1" max="4" value="2">
+    </div>
+  </div>
+
+  <div class="input-group">
+    <label for="rpm">Spindle Speed (RPM)</label>
+    <div class="slider-container">
+      <input type="range" id="rpmSlider" min="1000" max="24000" value="10000" step="100">
+      <input type="number" id="rpmInput" min="1000" max="24000" value="10000" step="100">
+    </div>
+  </div>
+
+  <div class="result">
+    Chip Load per Tooth: <span id="chipLoad">0.0000</span> in/tooth
+  </div>
+
+  <div class="button-container">
+    <button onclick="resetCalculator()">Reset</button>
+  </div>
+
+  <script>
+    const ipmSlider = document.getElementById('ipmSlider');
+    const flutesSlider = document.getElementById('flutesSlider');
+    const rpmSlider = document.getElementById('rpmSlider');
+
+    const ipmInput = document.getElementById('ipmInput');
+    const flutesInput = document.getElementById('flutesInput');
+    const rpmInput = document.getElementById('rpmInput');
+
+    const chipLoadDisplay = document.getElementById('chipLoad');
+
+    const defaults = {
+      ipm: 100,
+      flutes: 2,
+      rpm: 10000
+    };
+
+    function updateFromSlider(slider, input) {
+      input.value = slider.value;
+      calculate();
+    }
+
+    function updateFromInput(input, slider) {
+      slider.value = input.value;
+      calculate();
+    }
+
+    function calculate() {
+      const ipm = parseFloat(ipmInput.value);
+      const flutes = parseInt(flutesInput.value);
+      const rpm = parseFloat(rpmInput.value);
+
+      const chipLoad = (ipm / (rpm * flutes)) || 0;
+
+      chipLoadDisplay.textContent = chipLoad.toFixed(4);
+    }
+
+    function resetCalculator() {
+      ipmSlider.value = ipmInput.value = defaults.ipm;
+      flutesSlider.value = flutesInput.value = defaults.flutes;
+      rpmSlider.value = rpmInput.value = defaults.rpm;
+      calculate();
+    }
+
+    ipmSlider.oninput = () => updateFromSlider(ipmSlider, ipmInput);
+    flutesSlider.oninput = () => updateFromSlider(flutesSlider, flutesInput);
+    rpmSlider.oninput = () => updateFromSlider(rpmSlider, rpmInput);
+
+    ipmInput.oninput = () => updateFromInput(ipmInput, ipmSlider);
+    flutesInput.oninput = () => updateFromInput(flutesInput, flutesSlider);
+    rpmInput.oninput = () => updateFromInput(rpmInput, rpmSlider);
+
+    calculate(); // Initial run
+  </script>
+
+</body>
+</html>
