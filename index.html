@@ -13,6 +13,7 @@
     .result { margin-top: 20px; font-weight: bold; font-size: 1.2em; }
     .button-container { text-align: right; margin-top: 10px; }
     button { padding: 8px 16px; font-size: 1em; }
+    .toggle-container { margin-top: 10px; display: flex; align-items: center; gap: 10px; }
   </style>
 </head>
 <body>
@@ -43,8 +44,16 @@
     </div>
   </div>
 
+  <div class="toggle-container">
+    <label for="unitToggle">Show result in:</label>
+    <select id="unitToggle">
+      <option value="tooth">in/tooth</option>
+      <option value="rev">in/rev</option>
+    </select>
+  </div>
+
   <div class="result">
-    Chip Load per Tooth: <span id="chipLoad">0.0000</span> in/tooth
+    <span id="chipLabel">Chip Load per Tooth</span>: <span id="chipLoad">0.0000</span> <span id="chipUnit">in/tooth</span>
   </div>
 
   <div class="button-container">
@@ -61,6 +70,9 @@
     const rpmInput = document.getElementById('rpmInput');
 
     const chipLoadDisplay = document.getElementById('chipLoad');
+    const chipLabel = document.getElementById('chipLabel');
+    const chipUnit = document.getElementById('chipUnit');
+    const unitToggle = document.getElementById('unitToggle');
 
     const defaults = {
       ipm: 100,
@@ -82,19 +94,32 @@
       const ipm = parseFloat(ipmInput.value);
       const flutes = parseInt(flutesInput.value);
       const rpm = parseFloat(rpmInput.value);
+      const unit = unitToggle.value;
 
-      const chipLoad = (ipm / (rpm * flutes)) || 0;
+      let result = 0;
 
-      chipLoadDisplay.textContent = chipLoad.toFixed(4);
+      if (unit === "tooth") {
+        result = ipm / (rpm * flutes);
+        chipLabel.textContent = "Chip Load per Tooth";
+        chipUnit.textContent = "in/tooth";
+      } else {
+        result = ipm / rpm;
+        chipLabel.textContent = "Feed per Revolution";
+        chipUnit.textContent = "in/rev";
+      }
+
+      chipLoadDisplay.textContent = result.toFixed(4);
     }
 
     function resetCalculator() {
       ipmSlider.value = ipmInput.value = defaults.ipm;
       flutesSlider.value = flutesInput.value = defaults.flutes;
       rpmSlider.value = rpmInput.value = defaults.rpm;
+      unitToggle.value = "tooth";
       calculate();
     }
 
+    // Event bindings
     ipmSlider.oninput = () => updateFromSlider(ipmSlider, ipmInput);
     flutesSlider.oninput = () => updateFromSlider(flutesSlider, flutesInput);
     rpmSlider.oninput = () => updateFromSlider(rpmSlider, rpmInput);
@@ -102,6 +127,8 @@
     ipmInput.oninput = () => updateFromInput(ipmInput, ipmSlider);
     flutesInput.oninput = () => updateFromInput(flutesInput, flutesSlider);
     rpmInput.oninput = () => updateFromInput(rpmInput, rpmSlider);
+
+    unitToggle.onchange = calculate;
 
     calculate(); // Initial run
   </script>
